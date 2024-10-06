@@ -7,19 +7,19 @@ package com.reuven.websocket.services;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.reuven.websocket.dto.Message;
 import com.reuven.websocket.dto.MessageRequest;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestClient;
-import org.springframework.web.socket.*;
-
-import java.time.LocalDateTime;
-import java.util.UUID;
+import org.springframework.web.socket.CloseStatus;
+import org.springframework.web.socket.TextMessage;
+import org.springframework.web.socket.WebSocketMessage;
+import org.springframework.web.socket.WebSocketSession;
+import org.springframework.web.socket.handler.TextWebSocketHandler;
 
 @Component
-public class MessageHandler implements WebSocketHandler {
+public class MessageHandler extends TextWebSocketHandler {
 
     private static final Logger logger = LoggerFactory.getLogger(MessageHandler.class);
 
@@ -37,22 +37,21 @@ public class MessageHandler implements WebSocketHandler {
 
     @Override
     public void handleMessage(WebSocketSession session, WebSocketMessage<?> message) throws Exception {
-        String payload = message.getPayload().toString();
-        MessageRequest req = readValue(payload);
-        logger.info("row data: {}", req);
+        Object payload = message.getPayload();
+        logger.info("SessionId={}. Received message: {}", session.getId(), payload);
+//        MessageRequest req = readValue(payload.toString());
+//        session.sendMessage(new TextMessage(toString(new Message(UUID.randomUUID(), req.message(), LocalDateTime.now()))));
 
-        session.sendMessage(new TextMessage(toString(new Message(UUID.randomUUID(), req.message(), LocalDateTime.now()))));
+        // Call the delay service (blocking)
+        String responseData = restClient.get()
+                .uri(DELAY_SERVICE_URI, session.getId())
+                .retrieve()
+                .body(String.class);
 
-//        // Call the delay service (blocking)
-//        String responseData = restClient.get()
-//                .uri(DELAY_SERVICE_URI, session.getId())
-//                .retrieve()
-//                .body(String.class);
-//
-//        logger.info("Response from delay service: {}", responseData);
-//
-//        // Send the response back to the client (blocking)
-//        session.sendMessage(new TextMessage("Response from delay service: " + responseData));
+        logger.info("Response from delay service: {}", responseData);
+
+        // Send the response back to the client (blocking)
+        session.sendMessage(new TextMessage("Response from delay service: " + responseData));
     }
 
     @Override

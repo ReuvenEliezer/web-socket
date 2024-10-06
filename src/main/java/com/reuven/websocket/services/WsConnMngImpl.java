@@ -27,7 +27,6 @@ public class WsConnMngImpl implements WsConnMng {
     public void removeSession(String sessionId) {
         WebSocketSession session = sessions.remove(sessionId);
         closeSession(session);
-        logger.info("Session closed: {}", sessionId);
     }
 
     @Override
@@ -47,6 +46,7 @@ public class WsConnMngImpl implements WsConnMng {
         if (session != null && session.isOpen()) {
             try {
                 session.close();
+                logger.info("Session closed: {}", session.getId());
             } catch (IOException e) {
                 throw new RuntimeException(e);
             }

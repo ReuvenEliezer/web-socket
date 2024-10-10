@@ -10,32 +10,35 @@
     </parent>
 
     <groupId>com.reuven</groupId>
-    <artifactId>web-socket</artifactId>
+    <artifactId>web-socket-services</artifactId>
     <version>1.0.0-SNAPSHOT</version>
-    <name>web-socket</name>
-    <description>web-socket</description>
+    <name>web-socket-services</name>
+    <description>web-socket-services</description>
+    <packaging>pom</packaging>
 
     <properties>
         <java.version>17</java.version>
+        <spring-boot-admin.version>3.3.4</spring-boot-admin.version>
     </properties>
 
-    <dependencies>
-        <dependency>
-            <groupId>org.springframework.boot</groupId>
-            <artifactId>spring-boot-starter-websocket</artifactId>
-        </dependency>
+    <modules>
+        <module>admin-server</module>
+        <module>web-socket</module>
+        <module>delay-service</module>
+    </modules>
 
-        <dependency>
-            <groupId>org.springframework.boot</groupId>
-            <artifactId>spring-boot-starter-test</artifactId>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.assertj</groupId>
-            <artifactId>assertj-core</artifactId>
-            <scope>test</scope>
-        </dependency>
-    </dependencies>
+    <dependencyManagement>
+        <dependencies>
+            <dependency>
+                <groupId>de.codecentric</groupId>
+                <artifactId>spring-boot-admin-dependencies</artifactId>
+                <version>${spring-boot-admin.version}</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
+        </dependencies>
+    </dependencyManagement>
+
 
     <build>
         <plugins>

@@ -43,13 +43,13 @@ class WebSocketApplicationTests {
     private WebSocketHandler webSocketHandler;
 
     @PostConstruct
-    public void init() {
+    void init() {
         WEB_SOCKET_URI = URI.create(String.format(WEB_SOCKET_URI_STR, port));
     }
 
 
     @Test
-    public void webSocketManyMessagesForManySessionsTest() throws Exception {
+    void webSocketManyMessagesForManySessionsTest() throws Exception {
         int totalConnections = 100;
         int numOfMessagesForEachConnection = 1000;
         CountDownLatch latch = new CountDownLatch(totalConnections * numOfMessagesForEachConnection);

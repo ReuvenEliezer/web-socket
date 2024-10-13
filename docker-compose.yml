@@ -21,6 +21,7 @@ services:
       - "8080:8080"
     environment:
       - "SPRING_PROFILES_ACTIVE=docker"
+      - "DELAY_SERVICE_HOST=delay-service"
     networks:
       - my-network
   delay-service:

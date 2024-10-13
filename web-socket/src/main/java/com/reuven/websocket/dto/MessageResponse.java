@@ -5,4 +5,3 @@ import java.util.UUID;
 
 public record MessageResponse(UUID id, String body, LocalDateTime sentAt) {
 }
-

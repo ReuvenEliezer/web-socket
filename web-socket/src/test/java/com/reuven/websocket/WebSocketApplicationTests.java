@@ -16,12 +16,15 @@ import org.springframework.web.socket.WebSocketSession;
 import org.springframework.web.socket.client.WebSocketClient;
 import org.springframework.web.socket.client.standard.StandardWebSocketClient;
 
+import java.io.IOException;
 import java.net.URI;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
+
+import static org.assertj.core.api.Assertions.assertThat;
 
 @SpringBootTest
 //@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.DEFINED_PORT, classes = WebSocketApplication.class)
@@ -47,11 +50,10 @@ class WebSocketApplicationTests {
         WEB_SOCKET_URI = URI.create(String.format(WEB_SOCKET_URI_STR, port));
     }
 
-
     @Test
     void webSocketManyMessagesForManySessionsTest() throws Exception {
-        int totalConnections = 1;
-        int numOfMessagesForEachConnection = 1;
+        int totalConnections = 2;
+        int numOfMessagesForEachConnection = 3;
         CountDownLatch latch = new CountDownLatch(totalConnections * numOfMessagesForEachConnection);
 
         List<CompletableFuture<Void>> futures = sendMessages(totalConnections, numOfMessagesForEachConnection, latch);
@@ -61,7 +63,8 @@ class WebSocketApplicationTests {
         if (!latch.await(500, TimeUnit.SECONDS)) {
             logger.error("Not all connections completed in time");
         }
-        Thread.sleep(50000);
+        Thread.sleep(5000);
+        assertThat(latch.getCount()).isZero();
     }
 
     private List<CompletableFuture<Void>> sendMessages(int totalConnections, int numOfMessagesForEachConnection, CountDownLatch latch) {
@@ -72,7 +75,7 @@ class WebSocketApplicationTests {
             CompletableFuture<Void> testMessage = sessionFuture.thenAccept(session -> {
                 try {
                     for (int j = 0; j < numOfMessagesForEachConnection; j++) {
-                        String messagePayload = toString(new MessageRequest(String.format("Test Message number '%s' for session number '%s' sessionId: %s", j + 1, connNum + 1, session.getId())));
+                        String messagePayload = writeValueAsString(new MessageRequest(String.format("Test Message number '%s' for session number '%s' sessionId: %s", j + 1, connNum + 1, session.getId())));
                         logger.info("Sending message: {}", messagePayload);
                         session.sendMessage(new TextMessage(messagePayload));
                         latch.countDown();
@@ -80,6 +83,14 @@ class WebSocketApplicationTests {
                 } catch (Exception e) {
                     logger.error("Error sending message", e);
                     throw new RuntimeException(e);
+                } finally {
+                    if (session.isOpen()) {
+                        try {
+                            session.close();
+                        } catch (IOException e) {
+                            throw new RuntimeException(e);
+                        }
+                    }
                 }
             });
             futures.add(testMessage);
@@ -88,12 +99,7 @@ class WebSocketApplicationTests {
     }
 
 
-    private URI buildUri() {
-        return URI.create("ws://localhost:" + port + "/ws/messages");
-    }
-
-
-    private String toString(MessageRequest msg) {
+    private String writeValueAsString(MessageRequest msg) {
         try {
             return objectMapper.writeValueAsString(msg);
         } catch (JsonProcessingException e) {

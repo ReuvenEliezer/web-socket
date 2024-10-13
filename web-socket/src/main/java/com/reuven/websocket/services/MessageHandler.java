@@ -62,6 +62,8 @@ public class MessageHandler extends TextWebSocketHandler {
         // Send the response back to the client (blocking)
         MessageResponse messageResponse = new MessageResponse(UUID.randomUUID(), "Response from delay service: " + responseData, LocalDateTime.now());
         session.sendMessage(new TextMessage(writeValueAsString(messageResponse)));
+
+//        session.close(CloseStatus.NORMAL);
     }
 
     @Override

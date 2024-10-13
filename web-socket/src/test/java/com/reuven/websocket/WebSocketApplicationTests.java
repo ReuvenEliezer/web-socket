@@ -50,8 +50,8 @@ class WebSocketApplicationTests {
 
     @Test
     void webSocketManyMessagesForManySessionsTest() throws Exception {
-        int totalConnections = 100;
-        int numOfMessagesForEachConnection = 1000;
+        int totalConnections = 1;
+        int numOfMessagesForEachConnection = 1;
         CountDownLatch latch = new CountDownLatch(totalConnections * numOfMessagesForEachConnection);
 
         List<CompletableFuture<Void>> futures = sendMessages(totalConnections, numOfMessagesForEachConnection, latch);

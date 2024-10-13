@@ -27,3 +27,6 @@ management:
         http:
           server:
             requests: true
+delay:
+  service:
+    host: ${DELAY_SERVICE_HOST:localhost}

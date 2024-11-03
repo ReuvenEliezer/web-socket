@@ -10,6 +10,8 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.context.annotation.Profile;
+import org.springframework.test.context.ActiveProfiles;
 import org.springframework.web.socket.TextMessage;
 import org.springframework.web.socket.WebSocketHandler;
 import org.springframework.web.socket.WebSocketSession;
@@ -18,6 +20,7 @@ import org.springframework.web.socket.client.standard.StandardWebSocketClient;
 
 import java.io.IOException;
 import java.net.URI;
+import java.time.Duration;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
@@ -28,6 +31,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 @SpringBootTest
 //@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.DEFINED_PORT, classes = WebSocketApplication.class)
+@ActiveProfiles("test")
 class WebSocketApplicationTests {
 
     private static final Logger logger = LoggerFactory.getLogger(WebSocketApplicationTests.class);
@@ -45,6 +49,9 @@ class WebSocketApplicationTests {
     @Autowired
     private WebSocketHandler webSocketHandler;
 
+    @Value("${ws.open-connection-duration}")
+    private Duration wsOpenConnectionDuration;
+
     @PostConstruct
     void init() {
         WEB_SOCKET_URI = URI.create(String.format(WEB_SOCKET_URI_STR, port));
@@ -60,10 +67,10 @@ class WebSocketApplicationTests {
 
         CompletableFuture.allOf(futures.toArray(new CompletableFuture[0])).get();
 
-        if (!latch.await(500, TimeUnit.SECONDS)) {
+        if (!latch.await(wsOpenConnectionDuration.plusSeconds(2).getSeconds(), TimeUnit.SECONDS)) {
             logger.error("Not all connections completed in time");
         }
-        Thread.sleep(5000);
+//        Thread.sleep(wsOpenConnectionDuration.plusSeconds(2).toMillis());
         assertThat(latch.getCount()).isZero();
     }
 
@@ -84,13 +91,13 @@ class WebSocketApplicationTests {
                     logger.error("Error sending message", e);
                     throw new RuntimeException(e);
                 } finally {
-                    if (session.isOpen()) {
-                        try {
-                            session.close();
-                        } catch (IOException e) {
-                            throw new RuntimeException(e);
-                        }
-                    }
+//                    if (session.isOpen()) {
+//                        try {
+//                            session.close();
+//                        } catch (IOException e) {
+//                            throw new RuntimeException(e);
+//                        }
+//                    }
                 }
             });
             futures.add(testMessage);

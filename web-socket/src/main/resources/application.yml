@@ -1,4 +1,8 @@
 server:
+#  tomcat:
+#    max-connections: 80000
+#    threads:
+#      max: 1000
   port: 8080
 spring:
   application:
@@ -30,3 +34,5 @@ management:
 delay:
   service:
     host: ${DELAY_SERVICE_HOST:localhost}
+ws:
+  open-connection-duration: 10S
